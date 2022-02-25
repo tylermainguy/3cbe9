@@ -128,7 +128,46 @@ const Home = ({ user, logout }) => {
     [setConversations],
   );
 
-  const setActiveChat = (username) => {
+  const setActiveChat = async (username) => {
+    // check if there's an existing conversation
+    const activeConv = conversations
+      ? conversations.find(
+          (conversation) => conversation.otherUser.username === username
+        )
+      : {};
+
+    // if conversation exists
+    if (activeConv !== {} && activeConv !== undefined) {
+
+      // get all messages that need to be updated
+      let updatedMessages = activeConv["messagesRead"].filter((message) => {
+        return !message.hasBeenRead;
+      });
+
+      const reqBody = {
+        updatedMessages,
+      };
+
+      // update database
+      await axios.put("/api/messagesRead", reqBody);
+
+      // update the current conversation
+      setConversations((prev) => {
+        return prev.map((convo) => {
+          if (convo.otherUser.username === username) {
+            const convoCopy = { ...convo };
+            convoCopy.numUnread = 0;
+            let messagesRead = [...convoCopy.messagesRead];
+            messagesRead.forEach((message) => {
+              message.hasBeenRead = true;
+            });
+            convoCopy.messagesRead = messagesRead;
+            return convoCopy;
+          }
+          return convo;
+        });
+      });
+    }
     setActiveConversation(username);
   };
 

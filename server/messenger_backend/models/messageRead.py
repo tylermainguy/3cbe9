@@ -1,6 +1,7 @@
 from django.db import models
 
 from . import utils
+from .conversation import Conversation
 from .message import Message
 from .user import User
 
@@ -9,8 +10,14 @@ class MessageRead(utils.CustomModel):
     message = models.ForeignKey(
         Message, on_delete=models.CASCADE, db_column="messageId", related_name="+"
     )
-    recipient = models.ForeignKey(
-        User, on_delete=models.CASCADE, db_column="recipientId", related_name="+"
+
+    conversation = models.ForeignKey(
+        Conversation,
+        on_delete=models.CASCADE,
+        db_column="conversationId",
+        related_name="messagesRead",
     )
 
-    hasBeenRead = models.BooleanField(null=False, db_column="hasBeenRead")
+    recipientId = models.IntegerField(null=False)
+
+    hasBeenRead = models.BooleanField(null=False)

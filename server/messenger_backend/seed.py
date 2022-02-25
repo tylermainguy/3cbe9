@@ -8,6 +8,7 @@ def seed():
     User.objects.all().delete()
     Conversation.objects.all().delete()
     Message.objects.all().delete()
+    MessageRead.objects.all().delete()
 
     thomas = User(
         username="thomas",
@@ -35,13 +36,17 @@ def seed():
     )
     messages.save()
 
-    messagesRead = MessageRead(message=messages, recipient=thomas, hasBeenRead=False)
+    messagesRead = MessageRead(
+        message=messages, recipientId=thomas.id, hasBeenRead=False, conversation=santiagoConvo
+    )
     messagesRead.save()
 
     messages = Message(conversation=santiagoConvo, senderId=thomas.id, text="I'm from New York")
     messages.save()
 
-    messagesRead = MessageRead(message=messages, recipient=santiago, hasBeenRead=False)
+    messagesRead = MessageRead(
+        message=messages, recipientId=santiago.id, hasBeenRead=False, conversation=santiagoConvo
+    )
     messagesRead.save()
 
     messages = Message(
@@ -51,7 +56,9 @@ def seed():
     )
     messages.save()
 
-    messagesRead = MessageRead(message=messages, recipient=thomas, hasBeenRead=False)
+    messagesRead = MessageRead(
+        message=messages, recipientId=thomas.id, hasBeenRead=False, conversation=santiagoConvo
+    )
     messagesRead.save()
 
     chiumbo = User(
@@ -68,7 +75,9 @@ def seed():
     messages = Message(conversation=chiumboConvo, senderId=chiumbo.id, text="Sure! What time?")
     messages.save()
 
-    messagesRead = MessageRead(message=messages, recipient=thomas, hasBeenRead=False)
+    messagesRead = MessageRead(
+        message=messages, recipientId=thomas.id, hasBeenRead=False, conversation=chiumboConvo
+    )
     messagesRead.save()
 
     hualing = User(
@@ -85,13 +94,17 @@ def seed():
     for i in range(10):
         messages = Message(conversation=hualingConvo, senderId=hualing.id, text="a test message")
         messages.save()
-        messagesRead = MessageRead(message=messages, recipient=thomas, hasBeenRead=False)
+        messagesRead = MessageRead(
+            message=messages, recipientId=thomas.id, hasBeenRead=False, conversation=hualingConvo
+        )
         messagesRead.save()
 
     messages = Message(conversation=hualingConvo, senderId=hualing.id, text="😂 😂 😂")
     messages.save()
 
-    messagesRead = MessageRead(message=messages, recipient=thomas, hasBeenRead=False)
+    messagesRead = MessageRead(
+        message=messages, recipientId=thomas.id, hasBeenRead=False, conversation=hualingConvo
+    )
     messagesRead.save()
 
     user = User(
