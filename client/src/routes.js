@@ -85,12 +85,6 @@ const Routes = (props) => {
     }
   }, [user?.error]);
 
-  useEffect(() => {
-    if (user && user.id) history.push("/home");
-    if (history.location.pathname === "/login") history.push("/login");
-    else history.push("/register");
-  }, [user, history]);
-
   if (user?.isFetching) {
     return <div>Loading...</div>;
   }
@@ -118,7 +112,7 @@ const Routes = (props) => {
           path="/"
           render={(props) =>
             user?.id ? (
-              <Home user={user} />
+              <Home user={user} logout={logout} />
             ) : (
               <Signup user={user} logout={logout} />
             )
