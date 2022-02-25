@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState, useContext } from "react";
 import axios from "axios";
+import moment from "moment";
 import { useHistory } from "react-router-dom";
 import { Grid, CssBaseline, Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
@@ -84,7 +85,7 @@ const Home = ({ user, logout }) => {
         return prev.map((convo) => {
           if (convo.otherUser.id === recipientId) {
             const convoCopy = {...convo};
-            convoCopy.messages.push(message);
+            convoCopy.messages = [...convoCopy.messages, message];
             convoCopy.latestMessageText = message.text;
             convoCopy.id = message.conversationId;
             return convoCopy;
@@ -115,7 +116,7 @@ const Home = ({ user, logout }) => {
         return prev.map((convo) => {
           if (convo.id === message.conversationId) {
             const convoCopy = {...convo};
-            convoCopy.messages.push(message);
+            convoCopy.messages = [...convoCopy.messages, message]
             convoCopy.latestMessageText = message.text;
             return convoCopy;
           } else {
@@ -193,7 +194,13 @@ const Home = ({ user, logout }) => {
     const fetchConversations = async () => {
       try {
         const { data } = await axios.get("/api/conversations");
-        setConversations(data);
+        // sort messages for each conversation
+        const sortedData = data.map((convo) => {
+          convo.messages.sort((a, b) => (moment(a.createdAt).isSameOrAfter(b.createdAt) ? 1 : -1))
+          return convo;
+        });
+
+        setConversations(sortedData);
       } catch (error) {
         console.error(error);
       }
