@@ -137,7 +137,7 @@ const Home = ({ user, logout }) => {
       : {};
 
     // if conversation exists
-    if (activeConv !== {} && activeConv !== undefined) {
+    if (activeConv !== {} && activeConv !== undefined && activeConv.messages.length > 0) {
 
       // get all messages that need to be updated
       let updatedMessages = activeConv["messagesRead"].filter((message) => {
