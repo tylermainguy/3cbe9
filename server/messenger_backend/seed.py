@@ -1,5 +1,6 @@
 from django.db import migrations
-from messenger_backend.models import User, Conversation, Message
+
+from messenger_backend.models import Conversation, Message, MessageRead, User
 
 
 def seed():
@@ -34,10 +35,14 @@ def seed():
     )
     messages.save()
 
-    messages = Message(
-        conversation=santiagoConvo, senderId=thomas.id, text="I'm from New York"
-    )
+    messagesRead = MessageRead(message=messages, recipient=thomas, hasBeenRead=False)
+    messagesRead.save()
+
+    messages = Message(conversation=santiagoConvo, senderId=thomas.id, text="I'm from New York")
     messages.save()
+
+    messagesRead = MessageRead(message=messages, recipient=santiago, hasBeenRead=False)
+    messagesRead.save()
 
     messages = Message(
         conversation=santiagoConvo,
@@ -45,6 +50,9 @@ def seed():
         text="Share photo of your city, please",
     )
     messages.save()
+
+    messagesRead = MessageRead(message=messages, recipient=thomas, hasBeenRead=False)
+    messagesRead.save()
 
     chiumbo = User(
         username="chiumbo",
@@ -57,10 +65,11 @@ def seed():
     chiumboConvo = Conversation(user1=chiumbo, user2=thomas)
     chiumboConvo.save()
 
-    messages = Message(
-        conversation=chiumboConvo, senderId=chiumbo.id, text="Sure! What time?"
-    )
+    messages = Message(conversation=chiumboConvo, senderId=chiumbo.id, text="Sure! What time?")
     messages.save()
+
+    messagesRead = MessageRead(message=messages, recipient=thomas, hasBeenRead=False)
+    messagesRead.save()
 
     hualing = User(
         username="hualing",
@@ -74,13 +83,16 @@ def seed():
     hualingConvo.save()
 
     for i in range(10):
-        messages = Message(
-            conversation=hualingConvo, senderId=hualing.id, text="a test message"
-        )
+        messages = Message(conversation=hualingConvo, senderId=hualing.id, text="a test message")
         messages.save()
+        messagesRead = MessageRead(message=messages, recipient=thomas, hasBeenRead=False)
+        messagesRead.save()
 
     messages = Message(conversation=hualingConvo, senderId=hualing.id, text="😂 😂 😂")
     messages.save()
+
+    messagesRead = MessageRead(message=messages, recipient=thomas, hasBeenRead=False)
+    messagesRead.save()
 
     user = User(
         username="ashanti",
