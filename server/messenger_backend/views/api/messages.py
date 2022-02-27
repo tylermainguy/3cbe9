@@ -28,15 +28,22 @@ class Messages(APIView):
                 conversation = Conversation.objects.filter(id=conversation_id).first()
                 message = Message(senderId=sender_id, text=text, conversation=conversation)
                 message.save()
-                messageRead = MessageRead(
+                message_read = MessageRead(
                     message=message,
                     recipientId=recipient_id,
                     hasBeenRead=has_been_read,
                     conversation=conversation,
                 )
-                messageRead.save()
+                message_read.save()
                 message_json = message.to_dict()
-                return JsonResponse({"message": message_json, "sender": body["sender"]})
+                message_read_json = message_read.to_dict()
+                return JsonResponse(
+                    {
+                        "message": message_json,
+                        "messageRead": message_read_json,
+                        "sender": body["sender"],
+                    }
+                )
 
             # if we don't have conversation id, find a conversation to m       ake sure it doesn't already exist
             conversation = Conversation.find_conversation(sender_id, recipient_id)
@@ -51,15 +58,22 @@ class Messages(APIView):
             message = Message(senderId=sender_id, text=text, conversation=conversation)
             message.save()
 
-            messageRead = MessageRead(
+            message_read = MessageRead(
                 message=message,
                 recipientId=recipient_id,
                 hasBeenRead=has_been_read,
                 conversation=conversation,
             )
-            messageRead.save()
+            message_read.save()
 
             message_json = message.to_dict()
-            return JsonResponse({"message": message_json, "sender": sender})
+            message_read_json = message_read.to_dict()
+            return JsonResponse(
+                {
+                    "message": message_json,
+                    "messageRead": message_read_json,
+                    "sender": body["sender"],
+                }
+            )
         except Exception as e:
             return HttpResponse(status=500)

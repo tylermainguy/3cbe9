@@ -38,7 +38,7 @@ const Home = ({ user, logout }) => {
     users.forEach((user) => {
       // only create a fake convo if we don't already have a convo with this user
       if (!currentUsers[user.id]) {
-        let fakeConvo = { otherUser: user, messages: [] };
+        let fakeConvo = { otherUser: user, messages: [], messagesRead: [], numUnread: 0};
         newState.push(fakeConvo);
       }
     });
@@ -58,6 +58,7 @@ const Home = ({ user, logout }) => {
   const sendMessage = (data, body) => {
     socket.emit("new-message", {
       message: data.message,
+      messageRead: data.messageRead,
       recipientId: body.recipientId,
       sender: data.sender,
     });
@@ -70,7 +71,7 @@ const Home = ({ user, logout }) => {
       if (!body.conversationId) {
         addNewConvo(body.recipientId, data.message);
       } else {
-        addMessageToConversation(data);
+        await addMessageToConversation(data);
       }
 
       sendMessage(data, body);
@@ -99,36 +100,72 @@ const Home = ({ user, logout }) => {
   );
 
   const addMessageToConversation = useCallback(
-    (data) => {
-      // if sender isn't null, that means the message needs to be put in a brand new convo
-      const { message, sender = null } = data;
+    async (data) => {
+      const { message, messageRead, sender = null } = data;
       if (sender !== null) {
         const newConvo = {
           id: message.conversationId,
           otherUser: sender,
-          messages: [message],
+          messages: [],
+          messagesRead: [],
+          numUnread: 0,
         };
-        newConvo.latestMessageText = message.text;
         setConversations((prev) => [newConvo, ...prev]);
       }
 
+      if (user.id !== message.senderId) {
+        // if active conversation and username is equal to active conversation
+        const senderConvo = conversations.find(
+          (convo) => convo.id === message.conversationId
+        );
+        const isActive =
+          activeConversation &&
+          senderConvo &&
+          senderConvo.otherUser.username === activeConversation
+            ? true
+            : false;
+
+        messageRead.hasBeenRead = isActive;
+
+        if (isActive) {
+          const reqBody = {
+            updatedMessages: [messageRead],
+          };
+          await axios.put("/api/messagesRead", reqBody);
+        }
+
+        // update conversations with new read message
+        setConversations((prev) => {
+          return prev.map((convo) => {
+            if (convo.id === message.conversationId) {
+              const convoCopy = { ...convo };
+              convoCopy.numUnread = isActive ? 0 : convoCopy.numUnread + 1;
+              convoCopy.messagesRead = [...convoCopy.messagesRead, messageRead];
+              return convoCopy;
+            }
+            return convo;
+          });
+        });
+      }
       setConversations((prev) => {
         return prev.map((convo) => {
           if (convo.id === message.conversationId) {
-            const convoCopy = {...convo};
-            convoCopy.messages = [...convoCopy.messages, message]
+            const convoCopy = { ...convo };
+            convoCopy.messages = [...convoCopy.messages, message];
             convoCopy.latestMessageText = message.text;
             return convoCopy;
           } else {
             return convo;
           }
-        })
-      })
+        });
+      });
     },
-    [setConversations],
+    [setConversations, activeConversation, user, conversations]
   );
 
   const setActiveChat = async (username) => {
+    setActiveConversation(username);
+
     // check if there's an existing conversation
     const activeConv = conversations
       ? conversations.find(
@@ -137,8 +174,11 @@ const Home = ({ user, logout }) => {
       : {};
 
     // if conversation exists
-    if (activeConv !== {} && activeConv !== undefined && activeConv.messages.length > 0) {
-
+    if (
+      activeConv !== {} &&
+      activeConv !== undefined &&
+      activeConv.messages.length > 0
+    ) {
       // get all messages that need to be updated
       let updatedMessages = activeConv["messagesRead"].filter((message) => {
         return !message.hasBeenRead;
@@ -147,8 +187,6 @@ const Home = ({ user, logout }) => {
       const reqBody = {
         updatedMessages,
       };
-
-      // update database
       await axios.put("/api/messagesRead", reqBody);
 
       // update the current conversation
@@ -168,7 +206,6 @@ const Home = ({ user, logout }) => {
         });
       });
     }
-    setActiveConversation(username);
   };
 
   const addOnlineUser = useCallback((id) => {

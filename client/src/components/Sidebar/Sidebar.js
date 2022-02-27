@@ -27,6 +27,10 @@ const Sidebar = ({
 }) => {
   const classes = useStyles();
 
+  const handleSetActiveChat = async (username) => {
+    await setActiveChat(username);
+  }
+
   return (
     <Box className={classes.root}>
       <CurrentUser user={user} />
@@ -41,7 +45,7 @@ const Sidebar = ({
             <Chat
               conversation={conversation}
               key={conversation.otherUser.username}
-              setActiveChat={setActiveChat}
+              setActiveChat={handleSetActiveChat}
             />
           );
         })}
