@@ -1,9 +1,8 @@
-from django.db import models
+messages_readfrom django.db import models
 
 from . import utils
 from .conversation import Conversation
 from .message import Message
-from .user import User
 
 
 class MessageRead(utils.CustomModel):
