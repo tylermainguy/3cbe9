@@ -1,4 +1,4 @@
-messages_readfrom django.db import models
+from django.db import models
 
 from . import utils
 from .conversation import Conversation
