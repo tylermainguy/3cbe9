@@ -245,14 +245,14 @@ const Home = ({ user, logout }) => {
     // Socket init
     socket.on("add-online-user", addOnlineUser);
     socket.on("remove-offline-user", removeOfflineUser);
-    socket.on("new-message", addMessageToConversation);
+    socket.on("new-message", async (data) => await addMessageToConversation(data));
 
     return () => {
       // before the component is destroyed
       // unbind all event handlers used in this component
       socket.off("add-online-user", addOnlineUser);
       socket.off("remove-offline-user", removeOfflineUser);
-      socket.off("new-message", addMessageToConversation);
+      socket.off("new-message", async (data) => await addMessageToConversation(data));
     };
   }, [addMessageToConversation, addOnlineUser, removeOfflineUser, socket]);
 
