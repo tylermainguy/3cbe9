@@ -20,7 +20,6 @@ class Messages(APIView):
             conversation_id = body.get("conversationId")
             text = body.get("text")
             recipient_id = body.get("recipientId")
-            has_been_read = body.get("hasBeenRead")
             sender = body.get("sender")
 
             # if we already know conversation id, we can save time and just add it to message and return
@@ -31,7 +30,6 @@ class Messages(APIView):
                 message_read = MessageRead(
                     message=message,
                     recipientId=recipient_id,
-                    hasBeenRead=has_been_read,
                     conversation=conversation,
                 )
                 message_read.save()
@@ -61,7 +59,6 @@ class Messages(APIView):
             message_read = MessageRead(
                 message=message,
                 recipientId=recipient_id,
-                hasBeenRead=has_been_read,
                 conversation=conversation,
             )
             message_read.save()

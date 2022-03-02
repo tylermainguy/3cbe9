@@ -18,5 +18,5 @@ class MessageRead(utils.CustomModel):
     )
 
     recipientId = models.IntegerField(null=False)
-
-    hasBeenRead = models.BooleanField(null=False)
+    hasBeenRead = models.BooleanField(null=False, default=False)
+    updatedAt = models.DateTimeField(auto_now=True)

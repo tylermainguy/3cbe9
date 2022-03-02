@@ -36,6 +36,15 @@ def new_message(sid, message):
     )
 
 
+@sio.on("read-message")
+def read_message(sid, message):
+    sio.emit(
+        "read-message",
+        {"messageRead": message["messageRead"], "conversationId": message["conversationId"]},
+        skip_sid=sid,
+    )
+
+
 @sio.on("logout")
 def logout(sid, user_id):
     if user_id in online_users:

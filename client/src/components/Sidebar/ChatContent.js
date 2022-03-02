@@ -18,16 +18,12 @@ const useStyles = makeStyles((theme) => ({
     fontSize: 12,
     color: "#9CADC8",
     letterSpacing: -0.17,
-  },
-  previewTextUnread: {
-    fontSize: 12,
-    letterSpacing: -0.17,
-    fontWeight: "bold",
+    fontWeight: theme.numUnread ? "bold" : "regular",
   },
 }));
 
 const ChatContent = ({ conversation }) => {
-  const classes = useStyles();
+  const classes = useStyles(conversation);
 
   const { otherUser, numUnread } = conversation;
   const latestMessageText = conversation.id && conversation.latestMessageText;
@@ -38,19 +34,13 @@ const ChatContent = ({ conversation }) => {
         <Typography className={classes.username}>
           {otherUser.username}
         </Typography>
-        <Typography
-          className={
-            numUnread ? classes.previewTextUnread : classes.previewText
-          }
-        >
+        <Typography className={classes.previewText}>
           {latestMessageText}
         </Typography>
       </Box>
-      {numUnread > 0 && (
-        <Box>
-          <Badge badgeContent={numUnread} color="primary"></Badge>
-        </Box>
-      )}
+      <Box>
+        <Badge badgeContent={numUnread} color="primary" />
+      </Box>
     </Box>
   );
 };

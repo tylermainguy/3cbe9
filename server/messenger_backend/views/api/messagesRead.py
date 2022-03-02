@@ -1,4 +1,5 @@
 from django.contrib.auth.middleware import get_user
+from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from messenger_backend.models import Conversation, Message, MessageRead
 from online_users import online_users
@@ -15,15 +16,22 @@ class MessagesRead(APIView):
                 return HttpResponse(status=401)
 
             body = request.data
-            updated_messages = body.get("updatedMessages")
+            conversation_id = body.get("conversationId")
 
-            # update messages to be read
-            for message in updated_messages:
-                dbMessage = MessageRead.objects.get(id=message["id"])
-                dbMessage.hasBeenRead = True
-                dbMessage.save()
+            conversation = Conversation.objects.get(id=conversation_id)
 
-            return HttpResponse(status=201)
+            if user.id != conversation.user1_id and user.id != conversation.user2_id:
+                return HttpResponse(status=401)
+
+            unread_messages = MessageRead.objects.filter(
+                Q(conversation=conversation) & Q(hasBeenRead=False) & Q(recipientId=user.id)
+            )
+
+            for unread_message in unread_messages.all():
+                unread_message.hasBeenRead = True
+                unread_message.save()
+
+            return HttpResponse(status=204)
 
         except Exception as e:
             return HttpResponse(status=500)

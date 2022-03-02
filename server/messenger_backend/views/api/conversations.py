@@ -26,13 +26,22 @@ class Conversations(APIView):
                 .prefetch_related(
                     Prefetch("messages", queryset=Message.objects.order_by("-createdAt")),
                     Prefetch(
-                        "messagesRead", queryset=MessageRead.objects.filter(recipientId=user_id)
+                        "messagesRead",
+                        queryset=MessageRead.objects.order_by("-updatedAt"),
                     ),
                 )
                 .all()
             )
 
             conversations_response = []
+
+            def construct_messages_read(message_read):
+                message_read = message_read.to_dict(
+                    ["id", "recipientId", "hasBeenRead", "message_id"]
+                )
+                message_read["messageId"] = message_read["message_id"]
+                del message_read["message_id"]
+                return message_read
 
             for convo in conversations:
                 convo_dict = {
@@ -42,22 +51,16 @@ class Conversations(APIView):
                         for message in convo.messages.all()
                     ],
                     "messagesRead": [
-                        messageRead.to_dict(["id", "recipientId", "hasBeenRead"])
+                        construct_messages_read(messageRead)
                         for messageRead in convo.messagesRead.all()
                     ],
+                    "numUnread": convo.messagesRead.filter(
+                        Q(hasBeenRead=False) & Q(recipientId=user.id)
+                    ).count(),
                 }
 
                 # set properties for notification count and latest message preview
                 convo_dict["latestMessageText"] = convo_dict["messages"][0]["text"]
-
-                # can set the number of unread messages based
-                total = 0
-
-                for messageRead in convo_dict["messagesRead"]:
-                    if not messageRead["hasBeenRead"]:
-                        total += 1
-
-                convo_dict["numUnread"] = total
 
                 # set a property "otherUser" so that frontend will have easier access
                 user_fields = ["id", "username", "photoUrl"]
