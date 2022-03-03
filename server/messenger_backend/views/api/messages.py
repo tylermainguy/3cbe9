@@ -1,6 +1,6 @@
 from django.contrib.auth.middleware import get_user
 from django.http import HttpResponse, JsonResponse
-from messenger_backend.models import Conversation, Message
+from messenger_backend.models import Conversation, Message, MessageRead
 from online_users import online_users
 from rest_framework.views import APIView
 
@@ -25,12 +25,23 @@ class Messages(APIView):
             # if we already know conversation id, we can save time and just add it to message and return
             if conversation_id:
                 conversation = Conversation.objects.filter(id=conversation_id).first()
-                message = Message(
-                    senderId=sender_id, text=text, conversation=conversation
-                )
+                message = Message(senderId=sender_id, text=text, conversation=conversation)
                 message.save()
+                message_read = MessageRead(
+                    message=message,
+                    recipientId=recipient_id,
+                    conversation=conversation,
+                )
+                message_read.save()
                 message_json = message.to_dict()
-                return JsonResponse({"message": message_json, "sender": body["sender"]})
+                message_read_json = message_read.to_dict()
+                return JsonResponse(
+                    {
+                        "message": message_json,
+                        "messageRead": message_read_json,
+                        "sender": body["sender"],
+                    }
+                )
 
             # if we don't have conversation id, find a conversation to m       ake sure it doesn't already exist
             conversation = Conversation.find_conversation(sender_id, recipient_id)
@@ -44,7 +55,22 @@ class Messages(APIView):
 
             message = Message(senderId=sender_id, text=text, conversation=conversation)
             message.save()
+
+            message_read = MessageRead(
+                message=message,
+                recipientId=recipient_id,
+                conversation=conversation,
+            )
+            message_read.save()
+
             message_json = message.to_dict()
-            return JsonResponse({"message": message_json, "sender": sender})
+            message_read_json = message_read.to_dict()
+            return JsonResponse(
+                {
+                    "message": message_json,
+                    "messageRead": message_read_json,
+                    "sender": body["sender"],
+                }
+            )
         except Exception as e:
             return HttpResponse(status=500)

@@ -26,7 +26,21 @@ def go_online(sid, user_id):
 def new_message(sid, message):
     sio.emit(
         "new-message",
-        {"message": message["message"], "sender": message["sender"]},
+        {
+            "message": message["message"],
+            "messageRead": message["messageRead"],
+            "recipientId": message["recipientId"],
+            "sender": message["sender"],
+        },
+        skip_sid=sid,
+    )
+
+
+@sio.on("read-message")
+def read_message(sid, message):
+    sio.emit(
+        "read-message",
+        {"messageRead": message["messageRead"], "conversationId": message["conversationId"]},
         skip_sid=sid,
     )
 

@@ -2,10 +2,10 @@ from django.contrib.auth.middleware import get_user
 from django.db.models import Max, Q
 from django.db.models.query import Prefetch
 from django.http import HttpResponse, JsonResponse
-from messenger_backend.models import Conversation, Message
+from messenger_backend.models import Conversation, Message, MessageRead
 from online_users import online_users
-from rest_framework.views import APIView
 from rest_framework.request import Request
+from rest_framework.views import APIView
 
 
 class Conversations(APIView):
@@ -24,14 +24,24 @@ class Conversations(APIView):
             conversations = (
                 Conversation.objects.filter(Q(user1=user_id) | Q(user2=user_id))
                 .prefetch_related(
+                    Prefetch("messages", queryset=Message.objects.order_by("-createdAt")),
                     Prefetch(
-                        "messages", queryset=Message.objects.order_by("-createdAt")
-                    )
+                        "messagesRead",
+                        queryset=MessageRead.objects.order_by("-updatedAt"),
+                    ),
                 )
                 .all()
             )
 
             conversations_response = []
+
+            def construct_messages_read(message_read):
+                message_read = message_read.to_dict(
+                    ["id", "recipientId", "hasBeenRead", "message_id"]
+                )
+                message_read["messageId"] = message_read["message_id"]
+                del message_read["message_id"]
+                return message_read
 
             for convo in conversations:
                 convo_dict = {
@@ -40,6 +50,13 @@ class Conversations(APIView):
                         message.to_dict(["id", "text", "senderId", "createdAt"])
                         for message in convo.messages.all()
                     ],
+                    "messagesRead": [
+                        construct_messages_read(messageRead)
+                        for messageRead in convo.messagesRead.all()
+                    ],
+                    "numUnread": convo.messagesRead.filter(
+                        Q(hasBeenRead=False) & Q(recipientId=user.id)
+                    ).count(),
                 }
 
                 # set properties for notification count and latest message preview

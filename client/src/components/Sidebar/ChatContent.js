@@ -1,12 +1,13 @@
 import React from "react";
-import { Box, Typography } from "@material-ui/core";
+import { Badge, Box, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((props) => ({
   root: {
     display: "flex",
     justifyContent: "space-between",
     marginLeft: 20,
+    marginRight: 20,
     flexGrow: 1,
   },
   username: {
@@ -17,13 +18,14 @@ const useStyles = makeStyles((theme) => ({
     fontSize: 12,
     color: "#9CADC8",
     letterSpacing: -0.17,
+    fontWeight: props.numUnread ? "bold" : "regular",
   },
 }));
 
 const ChatContent = ({ conversation }) => {
-  const classes = useStyles();
+  const classes = useStyles(conversation);
 
-  const { otherUser } = conversation;
+  const { otherUser, numUnread } = conversation;
   const latestMessageText = conversation.id && conversation.latestMessageText;
 
   return (
@@ -35,6 +37,9 @@ const ChatContent = ({ conversation }) => {
         <Typography className={classes.previewText}>
           {latestMessageText}
         </Typography>
+      </Box>
+      <Box>
+        <Badge badgeContent={numUnread} color="primary" />
       </Box>
     </Box>
   );
