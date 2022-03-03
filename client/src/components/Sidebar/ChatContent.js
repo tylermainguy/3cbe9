@@ -2,7 +2,7 @@ import React from "react";
 import { Badge, Box, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((props) => ({
   root: {
     display: "flex",
     justifyContent: "space-between",
@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
     fontSize: 12,
     color: "#9CADC8",
     letterSpacing: -0.17,
-    fontWeight: theme.numUnread ? "bold" : "regular",
+    fontWeight: props.numUnread ? "bold" : "regular",
   },
 }));
 

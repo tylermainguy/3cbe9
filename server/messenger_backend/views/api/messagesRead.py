@@ -21,7 +21,7 @@ class MessagesRead(APIView):
             conversation = Conversation.objects.get(id=conversation_id)
 
             if user.id != conversation.user1_id and user.id != conversation.user2_id:
-                return HttpResponse(status=401)
+                return HttpResponse(status=403)
 
             unread_messages = MessageRead.objects.filter(
                 Q(conversation=conversation) & Q(hasBeenRead=False) & Q(recipientId=user.id)
